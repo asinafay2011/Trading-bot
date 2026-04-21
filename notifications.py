@@ -5,7 +5,7 @@ import requests
 
 
 def send_discord_message(text: str) -> None:
-    webhook = os.environ.get("DISCORD_WEBHOOK_URL")
+    webhook = (os.environ.get("DISCORD_WEBHOOK_URL") or "").strip()
     if not webhook:
         return
     try:

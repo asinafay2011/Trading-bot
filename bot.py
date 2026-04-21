@@ -18,14 +18,14 @@ SNAPSHOTS_FILE = Path(__file__).parent / "memory" / "account_snapshots.md"
 
 
 def _is_paper() -> bool:
-    return os.environ.get("PAPER_TRADING", "true").lower() == "true"
+    return os.environ.get("PAPER_TRADING", "true").strip().lower() == "true"
 
 
 def _live_confirmed() -> bool:
     # CLAUDE.md specifies an interactive CONFIRM_LIVE_TRADE typed confirmation.
     # In a headless routine we approximate that with an env-var gate the
     # operator must set explicitly before each live-trading window.
-    return os.environ.get("LIVE_TRADE_CONFIRMED", "").lower() == "true"
+    return os.environ.get("LIVE_TRADE_CONFIRMED", "").strip().lower() == "true"
 
 
 def _authorized_to_trade(symbol: str, qty: int, price: float) -> bool:

@@ -6,9 +6,9 @@ from alpaca_trade_api.rest import REST, APIError, TimeFrame, TimeFrameUnit
 
 
 def _client() -> REST:
-    key = os.environ["ALPACA_KEY_ID"]
-    secret = os.environ["ALPACA_SECRET_KEY"]
-    paper = os.environ.get("PAPER_TRADING", "true").lower() == "true"
+    key = os.environ["ALPACA_KEY_ID"].strip()
+    secret = os.environ["ALPACA_SECRET_KEY"].strip()
+    paper = os.environ.get("PAPER_TRADING", "true").strip().lower() == "true"
     base_url = "https://paper-api.alpaca.markets" if paper else "https://api.alpaca.markets"
     return REST(key, secret, base_url)
 
