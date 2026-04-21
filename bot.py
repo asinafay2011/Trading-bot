@@ -14,7 +14,7 @@ from notifications import send_discord_message
 load_dotenv()
 
 ALLOWED_SYMBOLS = ["AAPL", "MSFT", "TSLA", "SPY"]
-SNAPSHOT_MARKER = Path(__file__).parent / "memory" / ".last_snapshot"
+SNAPSHOTS_FILE = Path(__file__).parent / "memory" / "account_snapshots.md"
 
 
 def _is_paper() -> bool:
@@ -42,11 +42,9 @@ def _authorized_to_trade(symbol: str, qty: int, price: float) -> bool:
 
 def _snapshot_once_per_day(account) -> None:
     today = datetime.utcnow().date().isoformat()
-    SNAPSHOT_MARKER.parent.mkdir(exist_ok=True)
-    if SNAPSHOT_MARKER.exists() and SNAPSHOT_MARKER.read_text().strip() == today:
+    if SNAPSHOTS_FILE.exists() and today in SNAPSHOTS_FILE.read_text():
         return
     log_account_snapshot(account.equity, account.cash, account.buying_power)
-    SNAPSHOT_MARKER.write_text(today)
 
 
 def _manage_open_position(symbol: str, position, bars) -> None:

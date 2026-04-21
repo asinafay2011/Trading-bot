@@ -1,0 +1,70 @@
+name: Trading bot
+
+on:
+  schedule:
+    # Every 15 min, 13:00-21:59 UTC, weekdays — covers US market hours (EDT + EST).
+    # The bot self-gates via Alpaca's market clock, so off-hours runs no-op.
+    - cron: '*/15 13-21 * * 1-5'
+    # Daily summary at 21:05 UTC weekdays (16:05 EST / 17:05 EDT).
+    - cron: '5 21 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      script:
+        description: 'Script to run'
+        required: true
+        default: bot.py
+        type: choice
+        options:
+          - bot.py
+          - daily_summary.py
+
+permissions:
+  contents: write
+
+concurrency:
+  group: trading-bot
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Decide which script to run
+        id: pick
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "script=${{ inputs.script }}" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.event.schedule }}" == "5 21 * * 1-5" ]]; then
+            echo "script=daily_summary.py" >> "$GITHUB_OUTPUT"
+          else
+            echo "script=bot.py" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run ${{ steps.pick.outputs.script }}
+        env:
+          ALPACA_KEY_ID: ${{ secrets.ALPACA_KEY_ID }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          PAPER_TRADING: ${{ secrets.PAPER_TRADING }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python ${{ steps.pick.outputs.script }}
+
+      - name: Persist memory/ changes
+        run: |
+          git config user.name "trading-bot"
+          git config user.email "bot@github-actions"
+          git add memory/ || true
+          if ! git diff --cached --quiet; then
+            git commit -m "bot: update memory state [skip ci]"
+            git pull --rebase origin main
+            git push
+          fi

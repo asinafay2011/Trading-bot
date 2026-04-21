@@ -1,6 +1,6 @@
 """End-of-day summary routine. Reads memory files and posts a Slack digest."""
 import re
-from datetime import date
+from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -18,7 +18,7 @@ def _todays_trade_lines() -> list:
     path = MEMORY / "trade_history.md"
     if not path.exists():
         return []
-    today = date.today().isoformat()
+    today = datetime.utcnow().date().isoformat()
     return [line for line in path.read_text().splitlines() if today in line]
 
 
@@ -44,7 +44,7 @@ def run_daily_summary() -> None:
         )
         body = "\n".join(
             [
-                f"*Daily summary — {date.today().isoformat()}*",
+                f"**Daily summary — {datetime.utcnow().date().isoformat()}**",
                 f"Trades: {len(trades)}",
                 f"Total P/L: ${total_pnl:+.2f}",
                 f"Latest snapshot: {_latest_snapshot()}",

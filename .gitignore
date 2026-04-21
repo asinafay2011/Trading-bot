@@ -8,9 +8,6 @@ __pycache__/
 .venv/
 venv/
 
-# Bot state markers
-memory/.last_snapshot
-
 # Local runtime
 logs/
 *.bat
