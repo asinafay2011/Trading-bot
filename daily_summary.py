@@ -6,7 +6,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from memory_log import log_error
-from notifications import send_slack_message
+from notifications import send_discord_message
 
 load_dotenv()
 
@@ -50,10 +50,10 @@ def run_daily_summary() -> None:
                 f"Latest snapshot: {_latest_snapshot()}",
             ]
         )
-        send_slack_message(body)
+        send_discord_message(body)
     except Exception as e:
         log_error("daily summary", e)
-        send_slack_message(f":rotating_light: Daily summary failed: {e}")
+        send_discord_message(f"Daily summary failed: {e}")
         raise
 
 

@@ -9,7 +9,7 @@ import exchange
 import risk
 import strategy
 from memory_log import log_account_snapshot, log_error, log_trade
-from notifications import send_slack_message
+from notifications import send_discord_message
 
 load_dotenv()
 
@@ -32,8 +32,8 @@ def _authorized_to_trade(symbol: str, qty: int, price: float) -> bool:
     if _is_paper():
         return True
     if not _live_confirmed():
-        send_slack_message(
-            f":warning: Live order blocked — {qty} {symbol} @ ${price:.2f}. "
+        send_discord_message(
+            f"Live order blocked — {qty} {symbol} @ ${price:.2f}. "
             "Set LIVE_TRADE_CONFIRMED=true to proceed."
         )
         return False
@@ -60,8 +60,8 @@ def _manage_open_position(symbol: str, position, bars) -> None:
             exchange.cancel_order(order.id)
         pnl = (current_price - entry_price) * qty
         log_trade(symbol, "sell", entry_price, current_price, qty, pnl)
-        send_slack_message(
-            f":chart_with_downwards_trend: Exited {qty} {symbol} @ ${current_price:.2f} "
+        send_discord_message(
+            f"Exited {qty} {symbol} @ ${current_price:.2f} "
             f"(entry ${entry_price:.2f}, P/L ${pnl:+.2f})"
         )
         return
@@ -73,8 +73,8 @@ def _manage_open_position(symbol: str, position, bars) -> None:
         if risk.should_move_to_breakeven(current_price, entry_price, current_stop):
             exchange.cancel_order(stop_order.id)
             exchange.submit_stop_loss(symbol, qty, entry_price)
-            send_slack_message(
-                f":shield: {symbol} stop moved to breakeven ${entry_price:.2f}"
+            send_discord_message(
+                f"{symbol} stop moved to breakeven ${entry_price:.2f}"
             )
 
 
@@ -91,9 +91,8 @@ def _try_enter(symbol: str, bars, buying_power: float) -> None:
     stop = risk.stop_price(price)
     exchange.submit_stop_loss(symbol, qty, stop)
     log_trade(symbol, "buy", price, None, qty, None)
-    send_slack_message(
-        f":chart_with_upwards_trend: Entered {qty} {symbol} @ ${price:.2f} "
-        f"(stop ${stop:.2f})"
+    send_discord_message(
+        f"Entered {qty} {symbol} @ ${price:.2f} (stop ${stop:.2f})"
     )
 
 
@@ -124,10 +123,10 @@ def run_trading_cycle() -> None:
                     _try_enter(symbol, bars, buying_power)
             except Exception as e:
                 log_error(f"cycle failure for {symbol}", e)
-                send_slack_message(f":rotating_light: Error trading {symbol}: {e}")
+                send_discord_message(f"Error trading {symbol}: {e}")
     except Exception as e:
         log_error("trading cycle", e)
-        send_slack_message(f":rotating_light: Trading cycle halted: {e}")
+        send_discord_message(f"Trading cycle halted: {e}")
         raise
 
 
