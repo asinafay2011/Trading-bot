@@ -1,5 +1,6 @@
 """Main trading bot orchestration. Entry point: run_trading_cycle()."""
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -120,16 +121,17 @@ def _manage_open_position(symbol: str, position, bars, account) -> None:
             )
 
 
-def _try_enter(symbol: str, bars, account) -> None:
+def _try_enter(symbol: str, bars, account) -> bool:
+    """Returns True if a buy order was actually submitted."""
     if not strategy.entry_signal(bars):
-        return
+        return False
     price = float(bars["close"].iloc[-1])
     buying_power = float(account.buying_power)
     qty = risk.position_size(buying_power, price)
     if qty <= 0:
-        return
+        return False
     if not _authorized_to_trade(symbol, qty, price):
-        return
+        return False
     exchange.submit_market_buy(symbol, qty)
     stop = risk.stop_price(price)
     exchange.submit_stop_loss(symbol, qty, stop)
@@ -138,10 +140,11 @@ def _try_enter(symbol: str, bars, account) -> None:
     send_discord_message(
         f"**ENTRY** — {qty} {symbol} @ ${price:.2f}\n"
         f"Stop: ${stop:.2f} (-3.00%)\n"
-        f"Trigger: SMA20 > SMA50 & rising, RSI={rsi_val:.1f}\n"
+        f"Trigger: SMA20 > SMA50, RSI={rsi_val:.1f}\n"
         f"Time: {_et_now()}\n"
         f"Equity after: ${float(account.equity):,.2f}"
     )
+    return True
 
 
 def run_trading_cycle() -> None:
@@ -161,19 +164,39 @@ def run_trading_cycle() -> None:
         if not exchange.is_market_open():
             return
 
+        stats = {
+            "scanned": 0, "uptrend": 0, "rsi_pass": 0,
+            "eligible": 0, "entered": 0, "held": 0,
+        }
         for symbol in ALLOWED_SYMBOLS:
             try:
                 bars = exchange.get_bars(symbol, limit=100)
                 if bars.empty:
                     continue
+                stats["scanned"] += 1
                 position = exchange.get_position(symbol)
                 if position is not None:
+                    stats["held"] += 1
                     _manage_open_position(symbol, position, bars, account)
-                else:
-                    _try_enter(symbol, bars, account)
+                    continue
+                flags = strategy.entry_filters(bars)
+                if flags["uptrend"]:
+                    stats["uptrend"] += 1
+                if flags["rsi_pass"]:
+                    stats["rsi_pass"] += 1
+                if flags["uptrend"] and flags["rsi_pass"]:
+                    stats["eligible"] += 1
+                    if _try_enter(symbol, bars, account):
+                        stats["entered"] += 1
             except Exception as e:
                 log_error(f"cycle failure for {symbol}", e)
                 send_discord_message(f"**ERROR** — trading {symbol}\n{e}")
+        print(
+            f"[cycle] scanned={stats['scanned']} held={stats['held']} "
+            f"uptrend={stats['uptrend']} rsi_pass={stats['rsi_pass']} "
+            f"eligible={stats['eligible']} entered={stats['entered']}",
+            file=sys.stderr,
+        )
     except Exception as e:
         log_error("trading cycle", e)
         send_discord_message(f"**ERROR** — trading cycle halted\n{e}")

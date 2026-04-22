@@ -23,17 +23,26 @@ def rsi(series: pd.Series, period: int = RSI_PERIOD) -> pd.Series:
     return 100 - (100 / (1 + rs))
 
 
-def entry_signal(bars: pd.DataFrame) -> bool:
-    """True when SMA20 > SMA50, SMA20 is rising, and RSI < 70."""
-    if len(bars) < LONG_WINDOW + 5:
-        return False
+def entry_filters(bars: pd.DataFrame) -> dict:
+    """Compute each entry filter's state — consumed by entry_signal and by
+    bot.py's per-cycle diagnostic log."""
+    result = {"sufficient_data": False, "uptrend": False, "rsi_pass": False}
+    if len(bars) < LONG_WINDOW + 1:
+        return result
     close = bars["close"]
     short = sma(close, SHORT_WINDOW)
     long_ = sma(close, LONG_WINDOW)
     r = rsi(close)
-    uptrend = short.iloc[-1] > long_.iloc[-1]
-    rising = short.iloc[-1] > short.iloc[-5]
-    return bool(uptrend and rising and r.iloc[-1] < RSI_ENTRY_MAX)
+    result["sufficient_data"] = True
+    result["uptrend"] = bool(short.iloc[-1] > long_.iloc[-1])
+    result["rsi_pass"] = bool(r.iloc[-1] < RSI_ENTRY_MAX)
+    return result
+
+
+def entry_signal(bars: pd.DataFrame) -> bool:
+    """True when SMA20 > SMA50 and RSI < 70."""
+    flags = entry_filters(bars)
+    return flags["sufficient_data"] and flags["uptrend"] and flags["rsi_pass"]
 
 
 def exit_signal(bars: pd.DataFrame) -> bool:
