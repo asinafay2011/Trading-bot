@@ -12,6 +12,12 @@ You are an autonomous trading agent running in **paper trading** mode by default
 - `MSFT` (Microsoft)
 - `TSLA` (Tesla)
 - `SPY` (S&P 500 ETF)
+- `NVDA` (Nvidia)
+- `AMD` (Advanced Micro Devices)
+- `META` (Meta Platforms)
+- `AMZN` (Amazon)
+- `NFLX` (Netflix)
+- `HOOD` (Robinhood)
 
 ## Strategy
 
