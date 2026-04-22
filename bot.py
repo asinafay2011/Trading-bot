@@ -2,6 +2,7 @@
 import os
 from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 
@@ -37,6 +38,11 @@ ALLOWED_SYMBOLS = [
     "SPHE", "YSS",
 ]
 SNAPSHOTS_FILE = Path(__file__).parent / "memory" / "account_snapshots.md"
+ET = ZoneInfo("America/New_York")
+
+
+def _et_now() -> str:
+    return datetime.now(ET).strftime("%Y-%m-%d %H:%M ET")
 
 
 def _is_paper() -> bool:
@@ -55,7 +61,7 @@ def _authorized_to_trade(symbol: str, qty: int, price: float) -> bool:
         return True
     if not _live_confirmed():
         send_discord_message(
-            f"Live order blocked — {qty} {symbol} @ ${price:.2f}. "
+            f"**LIVE ORDER BLOCKED** — {qty} {symbol} @ ${price:.2f}\n"
             "Set LIVE_TRADE_CONFIRMED=true to proceed."
         )
         return False
@@ -69,7 +75,7 @@ def _snapshot_once_per_day(account) -> None:
     log_account_snapshot(account.equity, account.cash, account.buying_power)
 
 
-def _manage_open_position(symbol: str, position, bars) -> None:
+def _manage_open_position(symbol: str, position, bars, account) -> None:
     entry_price = float(position.avg_entry_price)
     qty = int(float(position.qty))
     current_price = float(bars["close"].iloc[-1])
@@ -79,10 +85,14 @@ def _manage_open_position(symbol: str, position, bars) -> None:
         for order in exchange.list_open_orders(symbol):
             exchange.cancel_order(order.id)
         pnl = (current_price - entry_price) * qty
+        pct = (current_price / entry_price - 1) * 100 if entry_price else 0.0
         log_trade(symbol, "sell", entry_price, current_price, qty, pnl)
         send_discord_message(
-            f"Exited {qty} {symbol} @ ${current_price:.2f} "
-            f"(entry ${entry_price:.2f}, P/L ${pnl:+.2f})"
+            f"**EXIT** — {qty} {symbol} @ ${current_price:.2f} (exit signal)\n"
+            f"Entry: ${entry_price:.2f}\n"
+            f"P/L: ${pnl:+.2f} ({pct:+.2f}%)\n"
+            f"Time: {_et_now()}\n"
+            f"Equity after: ${float(account.equity):,.2f}"
         )
         return
 
@@ -93,15 +103,19 @@ def _manage_open_position(symbol: str, position, bars) -> None:
         if risk.should_move_to_breakeven(current_price, entry_price, current_stop):
             exchange.cancel_order(stop_order.id)
             exchange.submit_stop_loss(symbol, qty, entry_price)
+            pct = (current_price / entry_price - 1) * 100 if entry_price else 0.0
             send_discord_message(
-                f"{symbol} stop moved to breakeven ${entry_price:.2f}"
+                f"**STOP → BREAKEVEN** — {symbol}\n"
+                f"Current: ${current_price:.2f} ({pct:+.2f}% from entry ${entry_price:.2f})\n"
+                f"Stop moved to ${entry_price:.2f}"
             )
 
 
-def _try_enter(symbol: str, bars, buying_power: float) -> None:
+def _try_enter(symbol: str, bars, account) -> None:
     if not strategy.entry_signal(bars):
         return
     price = float(bars["close"].iloc[-1])
+    buying_power = float(account.buying_power)
     qty = risk.position_size(buying_power, price)
     if qty <= 0:
         return
@@ -110,9 +124,14 @@ def _try_enter(symbol: str, bars, buying_power: float) -> None:
     exchange.submit_market_buy(symbol, qty)
     stop = risk.stop_price(price)
     exchange.submit_stop_loss(symbol, qty, stop)
+    rsi_val = float(strategy.rsi(bars["close"]).iloc[-1])
     log_trade(symbol, "buy", price, None, qty, None)
     send_discord_message(
-        f"Entered {qty} {symbol} @ ${price:.2f} (stop ${stop:.2f})"
+        f"**ENTRY** — {qty} {symbol} @ ${price:.2f}\n"
+        f"Stop: ${stop:.2f} (-3.00%)\n"
+        f"Trigger: 20-SMA crossed above 50-SMA, RSI={rsi_val:.1f}\n"
+        f"Time: {_et_now()}\n"
+        f"Equity after: ${float(account.equity):,.2f}"
     )
 
 
@@ -129,7 +148,6 @@ def run_trading_cycle() -> None:
 
         account = exchange.get_account()
         _snapshot_once_per_day(account)
-        buying_power = float(account.buying_power)
 
         for symbol in ALLOWED_SYMBOLS:
             try:
@@ -138,15 +156,15 @@ def run_trading_cycle() -> None:
                     continue
                 position = exchange.get_position(symbol)
                 if position is not None:
-                    _manage_open_position(symbol, position, bars)
+                    _manage_open_position(symbol, position, bars, account)
                 else:
-                    _try_enter(symbol, bars, buying_power)
+                    _try_enter(symbol, bars, account)
             except Exception as e:
                 log_error(f"cycle failure for {symbol}", e)
-                send_discord_message(f"Error trading {symbol}: {e}")
+                send_discord_message(f"**ERROR** — trading {symbol}\n{e}")
     except Exception as e:
         log_error("trading cycle", e)
-        send_discord_message(f"Trading cycle halted: {e}")
+        send_discord_message(f"**ERROR** — trading cycle halted\n{e}")
         raise
 
 
