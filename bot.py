@@ -152,11 +152,14 @@ def run_trading_cycle() -> None:
                 "Missing ALPACA_KEY_ID or ALPACA_SECRET_KEY. Update .env before trading."
             )
 
+        account = exchange.get_account()
+        # Snapshot + heartbeat fire regardless of market status so the operator
+        # gets a daily "bot alive" ping even on weekends/holidays or outside
+        # 09:30-16:00 ET (useful for verifying the webhook).
+        _snapshot_once_per_day(account)
+
         if not exchange.is_market_open():
             return
-
-        account = exchange.get_account()
-        _snapshot_once_per_day(account)
 
         for symbol in ALLOWED_SYMBOLS:
             try:
