@@ -121,20 +121,19 @@ def _manage_open_position(symbol: str, position, bars, account) -> None:
             )
 
 
-def _try_enter(symbol: str, bars, account) -> bool:
-    """Returns True if a buy order was actually submitted."""
+def _try_enter(symbol: str, bars, account, available_cash: float) -> float:
+    """Submit entry if signal fires and cash allows. Returns dollars committed
+    (approximate, using last close), or 0 if no order was placed."""
     if not strategy.entry_signal(bars):
-        return False
+        return 0.0
     price = float(bars["close"].iloc[-1])
-    buying_power = float(account.buying_power)
-    qty = risk.position_size(buying_power, price)
+    qty = risk.position_size(available_cash, price)
     if qty <= 0:
-        return False
+        return 0.0
     if not _authorized_to_trade(symbol, qty, price):
-        return False
-    exchange.submit_market_buy(symbol, qty)
+        return 0.0
     stop = risk.stop_price(price)
-    exchange.submit_stop_loss(symbol, qty, stop)
+    exchange.submit_buy_with_stop(symbol, qty, stop)
     rsi_val = float(strategy.rsi(bars["close"]).iloc[-1])
     log_trade(symbol, "buy", price, None, qty, None)
     send_discord_message(
@@ -144,7 +143,7 @@ def _try_enter(symbol: str, bars, account) -> bool:
         f"Time: {_et_now()}\n"
         f"Equity after: ${float(account.equity):,.2f}"
     )
-    return True
+    return qty * price
 
 
 def run_trading_cycle() -> None:
@@ -164,6 +163,11 @@ def run_trading_cycle() -> None:
         if not exchange.is_market_open():
             return
 
+        # Use `cash` rather than `buying_power`: CLAUDE.md mandates cash-only,
+        # and Alpaca paper inflates `buying_power` to 4x cash via margin, which
+        # caused position_size to over-commit and trigger "insufficient buying
+        # power" rejections on later symbols in the loop.
+        remaining_cash = float(account.cash)
         stats = {
             "scanned": 0, "insufficient_data": 0, "held": 0,
             "uptrend": 0, "rsi_pass": 0, "eligible": 0, "entered": 0,
@@ -189,8 +193,10 @@ def run_trading_cycle() -> None:
                     stats["rsi_pass"] += 1
                 if flags["uptrend"] and flags["rsi_pass"]:
                     stats["eligible"] += 1
-                    if _try_enter(symbol, bars, account):
+                    committed = _try_enter(symbol, bars, account, remaining_cash)
+                    if committed > 0:
                         stats["entered"] += 1
+                        remaining_cash -= committed
             except Exception as e:
                 log_error(f"cycle failure for {symbol}", e)
                 send_discord_message(f"**ERROR** — trading {symbol}\n{e}")
