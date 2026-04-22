@@ -13,7 +13,7 @@ from notifications import send_discord_message
 
 load_dotenv()
 
-ALLOWED_SYMBOLS = ["AAPL", "MSFT", "TSLA", "SPY"]
+ALLOWED_SYMBOLS = ["AAPL", "MSFT", "TSLA", "SPY", "NVDA", "AMD", "META", "AMZN", "NFLX", "HOOD"]
 SNAPSHOTS_FILE = Path(__file__).parent / "memory" / "account_snapshots.md"
 
 
