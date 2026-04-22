@@ -25,6 +25,16 @@ ALLOWED_SYMBOLS = [
     "UBER", "PLTR",
     # ETFs
     "SPY", "QQQ",
+    # Telecom / satellite
+    "NOK", "SATS", "VSAT", "SBAC",
+    # Energy / materials / industrial
+    "PARR", "PLUG",
+    # Semis (small/mid cap)
+    "PI", "TSEM",
+    # Biotech
+    "RCUS", "RLAY", "SNDX", "VKTX",
+    # Other / speculative
+    "SPHE", "YSS",
 ]
 SNAPSHOTS_FILE = Path(__file__).parent / "memory" / "account_snapshots.md"
 

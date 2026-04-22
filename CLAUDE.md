@@ -48,6 +48,30 @@ You are an autonomous trading agent running in **paper trading** mode by default
 - `SPY` (S&P 500 ETF)
 - `QQQ` (Nasdaq-100 ETF)
 
+### Telecom / Satellite
+- `NOK` (Nokia)
+- `SATS` (EchoStar)
+- `VSAT` (Viasat)
+- `SBAC` (SBA Communications)
+
+### Energy / Materials / Industrial
+- `PARR` (Par Pacific Holdings)
+- `PLUG` (Plug Power)
+
+### Semis (small/mid cap)
+- `PI` (Impinj)
+- `TSEM` (Tower Semiconductor)
+
+### Biotech
+- `RCUS` (Arcus Biosciences)
+- `RLAY` (Relay Therapeutics)
+- `SNDX` (Syndax Pharmaceuticals)
+- `VKTX` (Viking Therapeutics)
+
+### Other / Speculative
+- `SPHE`
+- `YSS`
+
 ## Strategy
 
 1. **Entry criteria** – Enter a long position when the 20‑period moving average crosses above the 50‑period moving average on a 15‑minute chart and the RSI (14) is below 60.
