@@ -51,6 +51,24 @@ def submit_market_buy(symbol: str, qty: int):
     )
 
 
+def submit_buy_with_stop(symbol: str, qty: int, stop_price: float):
+    """Submit a market buy with an attached stop-loss (OTO order class).
+
+    Avoids Alpaca paper's wash-trade rejection that fires when a market buy
+    and a separate stop-loss sell on the same symbol are submitted back to
+    back. The stop child only goes live after the parent buy fills.
+    """
+    return _client().submit_order(
+        symbol=symbol,
+        qty=qty,
+        side="buy",
+        type="market",
+        time_in_force="day",
+        order_class="oto",
+        stop_loss={"stop_price": round(stop_price, 2)},
+    )
+
+
 def submit_stop_loss(symbol: str, qty: int, stop_price: float):
     """Attach a GTC stop-loss sell order."""
     return _client().submit_order(
