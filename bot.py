@@ -165,8 +165,8 @@ def run_trading_cycle() -> None:
             return
 
         stats = {
-            "scanned": 0, "uptrend": 0, "rsi_pass": 0,
-            "eligible": 0, "entered": 0, "held": 0,
+            "scanned": 0, "insufficient_data": 0, "held": 0,
+            "uptrend": 0, "rsi_pass": 0, "eligible": 0, "entered": 0,
         }
         for symbol in ALLOWED_SYMBOLS:
             try:
@@ -180,6 +180,9 @@ def run_trading_cycle() -> None:
                     _manage_open_position(symbol, position, bars, account)
                     continue
                 flags = strategy.entry_filters(bars)
+                if not flags["sufficient_data"]:
+                    stats["insufficient_data"] += 1
+                    continue
                 if flags["uptrend"]:
                     stats["uptrend"] += 1
                 if flags["rsi_pass"]:
@@ -192,7 +195,8 @@ def run_trading_cycle() -> None:
                 log_error(f"cycle failure for {symbol}", e)
                 send_discord_message(f"**ERROR** — trading {symbol}\n{e}")
         print(
-            f"[cycle] scanned={stats['scanned']} held={stats['held']} "
+            f"[cycle] scanned={stats['scanned']} "
+            f"insufficient_data={stats['insufficient_data']} held={stats['held']} "
             f"uptrend={stats['uptrend']} rsi_pass={stats['rsi_pass']} "
             f"eligible={stats['eligible']} entered={stats['entered']}",
             file=sys.stderr,

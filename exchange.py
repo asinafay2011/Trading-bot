@@ -1,5 +1,6 @@
 """Alpaca API wrapper. All broker interactions live here."""
 import os
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 from alpaca_trade_api.rest import REST, APIError, TimeFrame, TimeFrameUnit
@@ -31,9 +32,15 @@ def get_position(symbol: str):
 
 
 def get_bars(symbol: str, limit: int = 100) -> pd.DataFrame:
-    """Fetch 15-minute bars for `symbol` as a DataFrame (open/high/low/close/volume)."""
+    """Fetch 15-minute bars for `symbol` as a DataFrame (open/high/low/close/volume).
+
+    Explicitly request a 10-day window so we always get enough history for the
+    50-period SMA. Without `start`, Alpaca defaults to a short recent window
+    that can return < 50 bars early in a trading day, blocking every entry.
+    """
+    start = (datetime.now(timezone.utc) - timedelta(days=10)).date().isoformat()
     return _client().get_bars(
-        symbol, TimeFrame(15, TimeFrameUnit.Minute), limit=limit
+        symbol, TimeFrame(15, TimeFrameUnit.Minute), start=start, limit=limit
     ).df
 
 
