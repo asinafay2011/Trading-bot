@@ -74,7 +74,7 @@ You are an autonomous trading agent running in **paper trading** mode by default
 
 ## Strategy
 
-1. **Entry criteria** – Enter a long position when the 20‑period moving average is above the 50‑period moving average AND rising (SMA20 now greater than SMA20 five bars ago) on a 15‑minute chart, and the RSI (14) is below 70.
+1. **Entry criteria** – Enter a long position when the 20‑period moving average is above the 50‑period moving average on a 15‑minute chart, and the RSI (14) is below 70.
 2. **Exit criteria** – Close the position when the price closes below the 50‑period moving average or the RSI rises above 70.
 3. **Position sizing** – Use 5% of available buying power per trade.  Compute the number of shares using the current price and the account’s cash balance.
 
