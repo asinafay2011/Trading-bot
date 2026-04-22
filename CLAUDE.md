@@ -8,16 +8,45 @@ You are an autonomous trading agent running in **paper trading** mode by default
 
 ## Allowed instruments
 
+### Tech
 - `AAPL` (Apple)
 - `MSFT` (Microsoft)
 - `TSLA` (Tesla)
-- `SPY` (S&P 500 ETF)
 - `NVDA` (Nvidia)
 - `AMD` (Advanced Micro Devices)
 - `META` (Meta Platforms)
 - `AMZN` (Amazon)
 - `NFLX` (Netflix)
+- `GOOGL` (Alphabet)
+- `AVGO` (Broadcom)
+- `ORCL` (Oracle)
+- `CRM` (Salesforce)
+- `ADBE` (Adobe)
+- `QCOM` (Qualcomm)
+
+### Finance / Payments
+- `JPM` (JPMorgan Chase)
+- `BAC` (Bank of America)
+- `V` (Visa)
+- `MA` (Mastercard)
 - `HOOD` (Robinhood)
+- `COIN` (Coinbase)
+
+### Consumer
+- `WMT` (Walmart)
+- `COST` (Costco)
+- `HD` (Home Depot)
+- `MCD` (McDonald's)
+- `NKE` (Nike)
+- `DIS` (Disney)
+
+### High-beta / other
+- `UBER` (Uber)
+- `PLTR` (Palantir)
+
+### ETFs
+- `SPY` (S&P 500 ETF)
+- `QQQ` (Nasdaq-100 ETF)
 
 ## Strategy
 

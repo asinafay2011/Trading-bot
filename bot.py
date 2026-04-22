@@ -13,7 +13,19 @@ from notifications import send_discord_message
 
 load_dotenv()
 
-ALLOWED_SYMBOLS = ["AAPL", "MSFT", "TSLA", "SPY", "NVDA", "AMD", "META", "AMZN", "NFLX", "HOOD"]
+ALLOWED_SYMBOLS = [
+    # Core tech
+    "AAPL", "MSFT", "TSLA", "NVDA", "AMD", "META", "AMZN", "NFLX", "GOOGL",
+    "AVGO", "ORCL", "CRM", "ADBE", "QCOM",
+    # Finance / payments
+    "JPM", "BAC", "V", "MA", "HOOD", "COIN",
+    # Consumer
+    "WMT", "COST", "HD", "MCD", "NKE", "DIS",
+    # High-beta / other
+    "UBER", "PLTR",
+    # ETFs
+    "SPY", "QQQ",
+]
 SNAPSHOTS_FILE = Path(__file__).parent / "memory" / "account_snapshots.md"
 
 
