@@ -138,7 +138,7 @@ def _try_enter(symbol: str, bars, account) -> None:
     send_discord_message(
         f"**ENTRY** — {qty} {symbol} @ ${price:.2f}\n"
         f"Stop: ${stop:.2f} (-3.00%)\n"
-        f"Trigger: 20-SMA crossed above 50-SMA, RSI={rsi_val:.1f}\n"
+        f"Trigger: SMA20 > SMA50 & rising, RSI={rsi_val:.1f}\n"
         f"Time: {_et_now()}\n"
         f"Equity after: ${float(account.equity):,.2f}"
     )

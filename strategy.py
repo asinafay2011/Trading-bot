@@ -4,7 +4,7 @@ import pandas as pd
 SHORT_WINDOW = 20
 LONG_WINDOW = 50
 RSI_PERIOD = 14
-RSI_ENTRY_MAX = 60
+RSI_ENTRY_MAX = 70
 RSI_EXIT_MIN = 70
 
 
@@ -24,15 +24,16 @@ def rsi(series: pd.Series, period: int = RSI_PERIOD) -> pd.Series:
 
 
 def entry_signal(bars: pd.DataFrame) -> bool:
-    """True when the 20-period SMA crosses above the 50-period SMA and RSI < 60."""
-    if len(bars) < LONG_WINDOW + 1:
+    """True when SMA20 > SMA50, SMA20 is rising, and RSI < 70."""
+    if len(bars) < LONG_WINDOW + 5:
         return False
     close = bars["close"]
     short = sma(close, SHORT_WINDOW)
     long_ = sma(close, LONG_WINDOW)
     r = rsi(close)
-    crossed_up = short.iloc[-2] <= long_.iloc[-2] and short.iloc[-1] > long_.iloc[-1]
-    return bool(crossed_up and r.iloc[-1] < RSI_ENTRY_MAX)
+    uptrend = short.iloc[-1] > long_.iloc[-1]
+    rising = short.iloc[-1] > short.iloc[-5]
+    return bool(uptrend and rising and r.iloc[-1] < RSI_ENTRY_MAX)
 
 
 def exit_signal(bars: pd.DataFrame) -> bool:
