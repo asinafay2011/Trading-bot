@@ -73,6 +73,15 @@ def _snapshot_once_per_day(account) -> None:
     if SNAPSHOTS_FILE.exists() and today in SNAPSHOTS_FILE.read_text():
         return
     log_account_snapshot(account.equity, account.cash, account.buying_power)
+    mode = "PAPER" if _is_paper() else "LIVE"
+    send_discord_message(
+        f"**HEARTBEAT** — trading bot online ({mode})\n"
+        f"Date: {today} | Time: {_et_now()}\n"
+        f"Equity: ${float(account.equity):,.2f} | "
+        f"Cash: ${float(account.cash):,.2f}\n"
+        f"Buying power: ${float(account.buying_power):,.2f}\n"
+        f"Watching {len(ALLOWED_SYMBOLS)} symbols"
+    )
 
 
 def _manage_open_position(symbol: str, position, bars, account) -> None:
