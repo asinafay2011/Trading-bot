@@ -57,6 +57,7 @@ jobs:
           PAPER_TRADING: ${{ secrets.PAPER_TRADING }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           STRATEGY: ${{ secrets.STRATEGY }}
+          STRATEGY_SWITCH_DATE: ${{ secrets.STRATEGY_SWITCH_DATE }}
         run: python ${{ steps.pick.outputs.script }}
 
       - name: Persist memory/ changes

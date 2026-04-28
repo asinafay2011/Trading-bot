@@ -74,7 +74,7 @@ You are an autonomous trading agent running in **paper trading** mode by default
 
 ## Strategy
 
-The active strategy is selected via the `STRATEGY` environment variable (defaults to `trend`). Two strategies are available:
+The active strategy is selected via the `STRATEGY` environment variable (defaults to `trend`). For staged testing, set `STRATEGY_SWITCH_DATE=YYYY-MM-DD` (UTC) to auto-flip from `trend` to `donchian` on that date. Explicit `STRATEGY` always wins over the schedule. Two strategies are available:
 
 ### `STRATEGY=trend` (default)
 

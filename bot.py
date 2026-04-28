@@ -76,7 +76,8 @@ def _snapshot_once_per_day(account) -> None:
     log_account_snapshot(account.equity, account.cash, account.buying_power)
     mode = "PAPER" if _is_paper() else "LIVE"
     send_discord_message(
-        f"**HEARTBEAT** — trading bot online ({mode})\n"
+        f"**HEARTBEAT** — trading bot online ({mode}, "
+        f"strategy={strategy.active_strategy_name()})\n"
         f"Date: {today} | Time: {_et_now()}\n"
         f"Equity: ${float(account.equity):,.2f} | "
         f"Cash: ${float(account.cash):,.2f}\n"

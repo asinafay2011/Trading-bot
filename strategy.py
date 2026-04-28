@@ -1,9 +1,16 @@
-"""Trading strategies. Selected via the STRATEGY env var; defaults to "trend".
+"""Trading strategies. Selected at runtime via env vars:
 
-  STRATEGY=trend     SMA20 > SMA50 + RSI < 70 (trend in place + not overbought)
-  STRATEGY=donchian  Close > 20-bar high + volume > 1.2x avg (breakout momentum)
+  STRATEGY=trend             SMA20 > SMA50 + RSI < 70 (trend in place)
+  STRATEGY=donchian          Close > 20-bar high + volume > 1.2x avg (breakout)
+
+  STRATEGY_SWITCH_DATE=YYYY-MM-DD
+      Optional. When today (UTC) is on or after this date, the bot auto-flips
+      from `trend` to `donchian`. Useful for "run trend for two weeks, then
+      donchian for a month" without manual intervention. Explicit STRATEGY
+      always wins over the schedule.
 """
 import os
+from datetime import date, datetime, timezone
 
 import pandas as pd
 
@@ -21,8 +28,18 @@ VOLUME_MULTIPLIER = 1.2
 
 
 def _active_strategy() -> str:
-    name = os.environ.get("STRATEGY", "trend").strip().lower()
-    return name if name in ("trend", "donchian") else "trend"
+    explicit = os.environ.get("STRATEGY", "").strip().lower()
+    if explicit in ("trend", "donchian"):
+        return explicit
+    switch_date_str = os.environ.get("STRATEGY_SWITCH_DATE", "").strip()
+    if switch_date_str:
+        try:
+            switch_date = date.fromisoformat(switch_date_str)
+        except ValueError:
+            return "trend"
+        if datetime.now(timezone.utc).date() >= switch_date:
+            return "donchian"
+    return "trend"
 
 
 def sma(series: pd.Series, window: int) -> pd.Series:
