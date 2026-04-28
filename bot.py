@@ -122,10 +122,9 @@ def _manage_open_position(symbol: str, position, bars, account) -> None:
 
 
 def _try_enter(symbol: str, bars, account, available_cash: float) -> float:
-    """Submit entry if signal fires and cash allows. Returns dollars committed
-    (approximate, using last close), or 0 if no order was placed."""
-    if not strategy.entry_signal(bars):
-        return 0.0
+    """Submit entry. Caller is responsible for verifying entry signal first.
+    Returns dollars committed (approximate, using last close), or 0 if no
+    order was placed."""
     price = float(bars["close"].iloc[-1])
     qty = risk.position_size(available_cash, price)
     if qty <= 0:
@@ -134,12 +133,11 @@ def _try_enter(symbol: str, bars, account, available_cash: float) -> float:
         return 0.0
     stop = risk.stop_price(price)
     exchange.submit_buy_with_stop(symbol, qty, stop)
-    rsi_val = float(strategy.rsi(bars["close"]).iloc[-1])
     log_trade(symbol, "buy", price, None, qty, None)
     send_discord_message(
         f"**ENTRY** — {qty} {symbol} @ ${price:.2f}\n"
         f"Stop: ${stop:.2f} (-3.00%)\n"
-        f"Trigger: SMA20 > SMA50, RSI={rsi_val:.1f}\n"
+        f"Trigger: {strategy.trigger_description(bars)}\n"
         f"Time: {_et_now()}\n"
         f"Equity after: ${float(account.equity):,.2f}"
     )
@@ -170,8 +168,9 @@ def run_trading_cycle() -> None:
         remaining_cash = float(account.cash)
         stats = {
             "scanned": 0, "insufficient_data": 0, "held": 0,
-            "uptrend": 0, "rsi_pass": 0, "eligible": 0, "entered": 0,
+            "eligible": 0, "entered": 0,
         }
+        filter_counts: dict = {}
         for symbol in ALLOWED_SYMBOLS:
             try:
                 bars = exchange.get_bars(symbol, limit=100)
@@ -187,11 +186,11 @@ def run_trading_cycle() -> None:
                 if not flags["sufficient_data"]:
                     stats["insufficient_data"] += 1
                     continue
-                if flags["uptrend"]:
-                    stats["uptrend"] += 1
-                if flags["rsi_pass"]:
-                    stats["rsi_pass"] += 1
-                if flags["uptrend"] and flags["rsi_pass"]:
+                for key, val in flags.items():
+                    if key == "sufficient_data":
+                        continue
+                    filter_counts[key] = filter_counts.get(key, 0) + (1 if val else 0)
+                if all(v for k, v in flags.items() if k != "sufficient_data"):
                     stats["eligible"] += 1
                     committed = _try_enter(symbol, bars, account, remaining_cash)
                     if committed > 0:
@@ -200,11 +199,12 @@ def run_trading_cycle() -> None:
             except Exception as e:
                 log_error(f"cycle failure for {symbol}", e)
                 send_discord_message(f"**ERROR** — trading {symbol}\n{e}")
+        filter_str = " ".join(f"{k}={v}" for k, v in filter_counts.items())
         print(
-            f"[cycle] scanned={stats['scanned']} "
+            f"[cycle] strategy={strategy.active_strategy_name()} "
+            f"scanned={stats['scanned']} "
             f"insufficient_data={stats['insufficient_data']} held={stats['held']} "
-            f"uptrend={stats['uptrend']} rsi_pass={stats['rsi_pass']} "
-            f"eligible={stats['eligible']} entered={stats['entered']}",
+            f"{filter_str} eligible={stats['eligible']} entered={stats['entered']}",
             file=sys.stderr,
         )
     except Exception as e:

@@ -56,6 +56,7 @@ jobs:
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
           PAPER_TRADING: ${{ secrets.PAPER_TRADING }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          STRATEGY: ${{ secrets.STRATEGY }}
         run: python ${{ steps.pick.outputs.script }}
 
       - name: Persist memory/ changes
