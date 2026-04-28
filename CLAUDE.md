@@ -74,9 +74,21 @@ You are an autonomous trading agent running in **paper trading** mode by default
 
 ## Strategy
 
+The active strategy is selected via the `STRATEGY` environment variable (defaults to `trend`). For staged testing, set `STRATEGY_SWITCH_DATE=YYYY-MM-DD` (UTC) to auto-flip from `trend` to `donchian` on that date. Explicit `STRATEGY` always wins over the schedule. Two strategies are available:
+
+### `STRATEGY=trend` (default)
+
 1. **Entry criteria** – Enter a long position when the 20‑period moving average is above the 50‑period moving average on a 15‑minute chart, and the RSI (14) is below 70.
 2. **Exit criteria** – Close the position when the price closes below the 50‑period moving average or the RSI rises above 70.
-3. **Position sizing** – Use 5% of available buying power per trade.  Compute the number of shares using the current price and the account’s cash balance.
+
+### `STRATEGY=donchian`
+
+1. **Entry criteria** – Enter a long position when the current 15‑minute close exceeds the highest close of the prior 20 bars AND volume on the breakout bar exceeds 1.2× the 20‑bar average volume (volume‑confirmed Donchian breakout).
+2. **Exit criteria** – Close the position when the current close falls below the lowest close of the prior 10 bars (10‑bar trailing low).
+
+### Common to all strategies
+
+3. **Position sizing** – Use 5% of available cash per trade.  Compute the number of shares using the current price and the account’s cash balance (cash only, no margin).
 
 ## Risk management
 
