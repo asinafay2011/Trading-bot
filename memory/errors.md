@@ -566,3 +566,27 @@ Traceback (most recent call last):
     raise APIError(error, http_error) from None
 alpaca_trade_api.rest.APIError: insufficient qty available for order (requested: 116, available: 0)
 ```
+### 2026-05-04T17:01:17.444156 — cycle failure for AMD
+```
+APIError: order is already in "filled" state
+Traceback (most recent call last):
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 184, in run_trading_cycle
+    _manage_open_position(symbol, position, bars, account)
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 96, in _manage_open_position
+    exchange.cancel_order(order.id)
+  File "/home/runner/work/Trading-bot/Trading-bot/exchange.py", line 89, in cancel_order
+    _client().cancel_order(order_id)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 492, in cancel_order
+    self.delete('/orders/{}'.format(order_id))
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 266, in delete
+    return self._request('DELETE', path, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 222, in _request
+    return self._one_request(method, url, opts, retry)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 248, in _one_request
+    raise_api_error(resp, http_error)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 83, in raise_api_error
+    raise APIError(error, http_error) from None
+alpaca_trade_api.rest.APIError: order is already in "filled" state
+```
