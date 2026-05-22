@@ -2735,3 +2735,192 @@ Traceback (most recent call last):
     raise APIError(error, http_error) from None
 alpaca_trade_api.rest.APIError: stop_loss.stop_price must be <= base_price - 0.01
 ```
+### 2026-05-22T19:28:28.848979 — cycle failure for MSFT
+```
+APIError: order is already in "filled" state
+Traceback (most recent call last):
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 184, in run_trading_cycle
+    _manage_open_position(symbol, position, bars, account)
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 96, in _manage_open_position
+    exchange.cancel_order(order.id)
+  File "/home/runner/work/Trading-bot/Trading-bot/exchange.py", line 89, in cancel_order
+    _client().cancel_order(order_id)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 492, in cancel_order
+    self.delete('/orders/{}'.format(order_id))
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 266, in delete
+    return self._request('DELETE', path, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 222, in _request
+    return self._one_request(method, url, opts, retry)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 248, in _one_request
+    raise_api_error(resp, http_error)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 83, in raise_api_error
+    raise APIError(error, http_error) from None
+alpaca_trade_api.rest.APIError: order is already in "filled" state
+```
+### 2026-05-22T19:28:29.800990 — cycle failure for TSLA
+```
+APIError: stop_loss.stop_price must be <= base_price - 0.01
+Traceback (most recent call last):
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 196, in run_trading_cycle
+    committed = _try_enter(symbol, bars, account, remaining_cash)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 136, in _try_enter
+    exchange.submit_buy_with_stop(symbol, qty, stop)
+  File "/home/runner/work/Trading-bot/Trading-bot/exchange.py", line 61, in submit_buy_with_stop
+    return _client().submit_order(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 433, in submit_order
+    resp = self.post('/orders', params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 257, in post
+    return self._request('POST', path, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 222, in _request
+    return self._one_request(method, url, opts, retry)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 248, in _one_request
+    raise_api_error(resp, http_error)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 83, in raise_api_error
+    raise APIError(error, http_error) from None
+alpaca_trade_api.rest.APIError: stop_loss.stop_price must be <= base_price - 0.01
+```
+### 2026-05-22T19:28:31.013512 — cycle failure for NVDA
+```
+APIError: stop_loss.stop_price must be <= base_price - 0.01
+Traceback (most recent call last):
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 196, in run_trading_cycle
+    committed = _try_enter(symbol, bars, account, remaining_cash)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 136, in _try_enter
+    exchange.submit_buy_with_stop(symbol, qty, stop)
+  File "/home/runner/work/Trading-bot/Trading-bot/exchange.py", line 61, in submit_buy_with_stop
+    return _client().submit_order(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 433, in submit_order
+    resp = self.post('/orders', params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 257, in post
+    return self._request('POST', path, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 222, in _request
+    return self._one_request(method, url, opts, retry)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 248, in _one_request
+    raise_api_error(resp, http_error)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 83, in raise_api_error
+    raise APIError(error, http_error) from None
+alpaca_trade_api.rest.APIError: stop_loss.stop_price must be <= base_price - 0.01
+```
+### 2026-05-22T19:28:51.250699 — cycle failure for SPY
+```
+APIError: order is already in "filled" state
+Traceback (most recent call last):
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 184, in run_trading_cycle
+    _manage_open_position(symbol, position, bars, account)
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 96, in _manage_open_position
+    exchange.cancel_order(order.id)
+  File "/home/runner/work/Trading-bot/Trading-bot/exchange.py", line 89, in cancel_order
+    _client().cancel_order(order_id)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 492, in cancel_order
+    self.delete('/orders/{}'.format(order_id))
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 266, in delete
+    return self._request('DELETE', path, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 222, in _request
+    return self._one_request(method, url, opts, retry)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 248, in _one_request
+    raise_api_error(resp, http_error)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 83, in raise_api_error
+    raise APIError(error, http_error) from None
+alpaca_trade_api.rest.APIError: order is already in "filled" state
+```
+### 2026-05-22T19:28:54.831770 — cycle failure for PARR
+```
+APIError: insufficient qty available for order (requested: 46, available: 0)
+Traceback (most recent call last):
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 184, in run_trading_cycle
+    _manage_open_position(symbol, position, bars, account)
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 94, in _manage_open_position
+    exchange.close_position(symbol)
+  File "/home/runner/work/Trading-bot/Trading-bot/exchange.py", line 94, in close_position
+    return _client().close_position(symbol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 528, in close_position
+    resp = self.delete('/positions/{}'.format(symbol), data=data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 266, in delete
+    return self._request('DELETE', path, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 222, in _request
+    return self._one_request(method, url, opts, retry)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 248, in _one_request
+    raise_api_error(resp, http_error)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 83, in raise_api_error
+    raise APIError(error, http_error) from None
+alpaca_trade_api.rest.APIError: insufficient qty available for order (requested: 46, available: 0)
+```
+### 2026-05-22T19:28:59.941243 — cycle failure for RLAY
+```
+APIError: order is already in "filled" state
+Traceback (most recent call last):
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 184, in run_trading_cycle
+    _manage_open_position(symbol, position, bars, account)
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 96, in _manage_open_position
+    exchange.cancel_order(order.id)
+  File "/home/runner/work/Trading-bot/Trading-bot/exchange.py", line 89, in cancel_order
+    _client().cancel_order(order_id)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 492, in cancel_order
+    self.delete('/orders/{}'.format(order_id))
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 266, in delete
+    return self._request('DELETE', path, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 222, in _request
+    return self._one_request(method, url, opts, retry)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 248, in _one_request
+    raise_api_error(resp, http_error)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 83, in raise_api_error
+    raise APIError(error, http_error) from None
+alpaca_trade_api.rest.APIError: order is already in "filled" state
+```
+### 2026-05-22T19:29:04.035128 — discord webhook post failed
+```
+HTTPError: 503 Server Error: Service Unavailable for url: https://discord.com/api/webhooks/1495973356225167492/L8IeO-sbKGOJ3lzZfNTGzKswSHMRdL_zR3aIsXOKzfsIw4dymhssJq3WoABtOllj6rUy
+Traceback (most recent call last):
+  File "/home/runner/work/Trading-bot/Trading-bot/notifications.py", line 25, in send_discord_message
+    response.raise_for_status()
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/requests/models.py", line 1167, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 503 Server Error: Service Unavailable for url: https://discord.com/api/webhooks/1495973356225167492/L8IeO-sbKGOJ3lzZfNTGzKswSHMRdL_zR3aIsXOKzfsIw4dymhssJq3WoABtOllj6rUy
+```
+### 2026-05-22T19:29:04.676604 — cycle failure for VKTX
+```
+APIError: stop_loss.stop_price must be <= base_price - 0.01
+Traceback (most recent call last):
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 196, in run_trading_cycle
+    committed = _try_enter(symbol, bars, account, remaining_cash)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 136, in _try_enter
+    exchange.submit_buy_with_stop(symbol, qty, stop)
+  File "/home/runner/work/Trading-bot/Trading-bot/exchange.py", line 61, in submit_buy_with_stop
+    return _client().submit_order(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 433, in submit_order
+    resp = self.post('/orders', params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 257, in post
+    return self._request('POST', path, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 222, in _request
+    return self._one_request(method, url, opts, retry)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 248, in _one_request
+    raise_api_error(resp, http_error)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 83, in raise_api_error
+    raise APIError(error, http_error) from None
+alpaca_trade_api.rest.APIError: stop_loss.stop_price must be <= base_price - 0.01
+```
