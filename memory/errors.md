@@ -8854,3 +8854,57 @@ Traceback (most recent call last):
     raise APIError(error, http_error) from None
 alpaca_trade_api.rest.APIError: order is already in "filled" state
 ```
+### 2026-07-09T17:51:26.070411 — cycle failure for NOK
+```
+APIError: stop_loss.stop_price must be <= base_price - 0.01
+Traceback (most recent call last):
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 196, in run_trading_cycle
+    committed = _try_enter(symbol, bars, account, remaining_cash)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 136, in _try_enter
+    exchange.submit_buy_with_stop(symbol, qty, stop)
+  File "/home/runner/work/Trading-bot/Trading-bot/exchange.py", line 61, in submit_buy_with_stop
+    return _client().submit_order(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 433, in submit_order
+    resp = self.post('/orders', params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 257, in post
+    return self._request('POST', path, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 222, in _request
+    return self._one_request(method, url, opts, retry)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 248, in _one_request
+    raise_api_error(resp, http_error)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 83, in raise_api_error
+    raise APIError(error, http_error) from None
+alpaca_trade_api.rest.APIError: stop_loss.stop_price must be <= base_price - 0.01
+```
+### 2026-07-09T17:51:27.858313 — cycle failure for TSEM
+```
+APIError: stop_loss.stop_price must be <= base_price - 0.01
+Traceback (most recent call last):
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 196, in run_trading_cycle
+    committed = _try_enter(symbol, bars, account, remaining_cash)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Trading-bot/Trading-bot/bot.py", line 136, in _try_enter
+    exchange.submit_buy_with_stop(symbol, qty, stop)
+  File "/home/runner/work/Trading-bot/Trading-bot/exchange.py", line 61, in submit_buy_with_stop
+    return _client().submit_order(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 433, in submit_order
+    resp = self.post('/orders', params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 257, in post
+    return self._request('POST', path, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 222, in _request
+    return self._one_request(method, url, opts, retry)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 248, in _one_request
+    raise_api_error(resp, http_error)
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/alpaca_trade_api/rest.py", line 83, in raise_api_error
+    raise APIError(error, http_error) from None
+alpaca_trade_api.rest.APIError: stop_loss.stop_price must be <= base_price - 0.01
+```
