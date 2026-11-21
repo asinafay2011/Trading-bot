@@ -1,11 +1,45 @@
-"""SMA crossover with RSI filter, per CLAUDE.md strategy section."""
+"""Trading strategies. Selected at runtime via env vars:
+
+  STRATEGY=trend             SMA20 > SMA50 + RSI < 70 (trend in place)
+  STRATEGY=donchian          Close > 20-bar high + volume > 1.2x avg (breakout)
+
+  STRATEGY_SWITCH_DATE=YYYY-MM-DD
+      Optional. When today (UTC) is on or after this date, the bot auto-flips
+      from `trend` to `donchian`. Useful for "run trend for two weeks, then
+      donchian for a month" without manual intervention. Explicit STRATEGY
+      always wins over the schedule.
+"""
+import os
+from datetime import date, datetime, timezone
+
 import pandas as pd
 
+# --- Trend strategy params ---
 SHORT_WINDOW = 20
 LONG_WINDOW = 50
 RSI_PERIOD = 14
 RSI_ENTRY_MAX = 70
 RSI_EXIT_MIN = 70
+
+# --- Donchian breakout params ---
+DONCHIAN_LOOKBACK = 20
+DONCHIAN_EXIT_LOOKBACK = 10
+VOLUME_MULTIPLIER = 1.2
+
+
+def _active_strategy() -> str:
+    explicit = os.environ.get("STRATEGY", "").strip().lower()
+    if explicit in ("trend", "donchian"):
+        return explicit
+    switch_date_str = os.environ.get("STRATEGY_SWITCH_DATE", "").strip()
+    if switch_date_str:
+        try:
+            switch_date = date.fromisoformat(switch_date_str)
+        except ValueError:
+            return "trend"
+        if datetime.now(timezone.utc).date() >= switch_date:
+            return "donchian"
+    return "trend"
 
 
 def sma(series: pd.Series, window: int) -> pd.Series:
@@ -23,9 +57,9 @@ def rsi(series: pd.Series, period: int = RSI_PERIOD) -> pd.Series:
     return 100 - (100 / (1 + rs))
 
 
-def entry_filters(bars: pd.DataFrame) -> dict:
-    """Compute each entry filter's state — consumed by entry_signal and by
-    bot.py's per-cycle diagnostic log."""
+# ----- Trend strategy -----
+
+def _trend_entry_filters(bars: pd.DataFrame) -> dict:
     result = {"sufficient_data": False, "uptrend": False, "rsi_pass": False}
     if len(bars) < LONG_WINDOW + 1:
         return result
@@ -39,17 +73,91 @@ def entry_filters(bars: pd.DataFrame) -> dict:
     return result
 
 
-def entry_signal(bars: pd.DataFrame) -> bool:
-    """True when SMA20 > SMA50 and RSI < 70."""
-    flags = entry_filters(bars)
-    return flags["sufficient_data"] and flags["uptrend"] and flags["rsi_pass"]
-
-
-def exit_signal(bars: pd.DataFrame) -> bool:
-    """True when close < 50-period SMA or RSI > 70."""
+def _trend_exit_signal(bars: pd.DataFrame) -> bool:
     if len(bars) < LONG_WINDOW:
         return False
     close = bars["close"]
     long_ = sma(close, LONG_WINDOW)
     r = rsi(close)
     return bool(close.iloc[-1] < long_.iloc[-1] or r.iloc[-1] > RSI_EXIT_MIN)
+
+
+def _trend_trigger_description(bars: pd.DataFrame) -> str:
+    rsi_val = float(rsi(bars["close"]).iloc[-1])
+    return f"SMA20 > SMA50, RSI={rsi_val:.1f}"
+
+
+# ----- Donchian breakout strategy -----
+
+def _donchian_entry_filters(bars: pd.DataFrame) -> dict:
+    result = {"sufficient_data": False, "breakout": False, "volume_pass": False}
+    if len(bars) < DONCHIAN_LOOKBACK + 1:
+        return result
+    close = bars["close"]
+    volume = bars["volume"]
+    prior_close = close.iloc[-(DONCHIAN_LOOKBACK + 1):-1]
+    prior_volume = volume.iloc[-(DONCHIAN_LOOKBACK + 1):-1]
+    prior_high = float(prior_close.max())
+    avg_volume = float(prior_volume.mean()) if len(prior_volume) else 0.0
+    result["sufficient_data"] = True
+    result["breakout"] = bool(close.iloc[-1] > prior_high)
+    result["volume_pass"] = bool(
+        avg_volume > 0 and volume.iloc[-1] > VOLUME_MULTIPLIER * avg_volume
+    )
+    return result
+
+
+def _donchian_exit_signal(bars: pd.DataFrame) -> bool:
+    if len(bars) < DONCHIAN_EXIT_LOOKBACK + 1:
+        return False
+    close = bars["close"]
+    prior_low = float(close.iloc[-(DONCHIAN_EXIT_LOOKBACK + 1):-1].min())
+    return bool(close.iloc[-1] < prior_low)
+
+
+def _donchian_trigger_description(bars: pd.DataFrame) -> str:
+    close = bars["close"]
+    volume = bars["volume"]
+    prior_close = close.iloc[-(DONCHIAN_LOOKBACK + 1):-1]
+    prior_volume = volume.iloc[-(DONCHIAN_LOOKBACK + 1):-1]
+    prior_high = float(prior_close.max())
+    avg_volume = float(prior_volume.mean()) if len(prior_volume) else 0.0
+    vol_mult = float(volume.iloc[-1]) / avg_volume if avg_volume > 0 else 0.0
+    return (
+        f"Breakout above {DONCHIAN_LOOKBACK}-bar high ${prior_high:.2f}, "
+        f"vol={vol_mult:.1f}x avg"
+    )
+
+
+# ----- Public dispatchers -----
+
+def entry_filters(bars: pd.DataFrame) -> dict:
+    """Compute filter state for the active strategy. Each strategy returns a
+    `sufficient_data` flag plus its own named filters (uptrend/rsi_pass for
+    trend; breakout/volume_pass for donchian)."""
+    if _active_strategy() == "donchian":
+        return _donchian_entry_filters(bars)
+    return _trend_entry_filters(bars)
+
+
+def entry_signal(bars: pd.DataFrame) -> bool:
+    flags = entry_filters(bars)
+    if not flags["sufficient_data"]:
+        return False
+    return all(v for k, v in flags.items() if k != "sufficient_data")
+
+
+def exit_signal(bars: pd.DataFrame) -> bool:
+    if _active_strategy() == "donchian":
+        return _donchian_exit_signal(bars)
+    return _trend_exit_signal(bars)
+
+
+def trigger_description(bars: pd.DataFrame) -> str:
+    if _active_strategy() == "donchian":
+        return _donchian_trigger_description(bars)
+    return _trend_trigger_description(bars)
+
+
+def active_strategy_name() -> str:
+    return _active_strategy()
